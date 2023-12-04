@@ -3,6 +3,8 @@ on:
   push:
     tags:
       - 'tools-*'
+env:
+  tag: ${GITHUB_REF#refs/tags/tools-}
 jobs:
   release-cke-tools:
     name: Release CKE tools image
@@ -16,9 +18,6 @@ jobs:
         run: |
           cd tools
           make all
-      - name: Extract tag
-        id: extract-tag
-        run: echo "tag=${GITHUB_REF#refs/tags/tools-}" >> $GITHUB_OUTPUT
       - name: Log in to ghcr.io
         uses: docker/login-action@v3
         with:
@@ -31,5 +30,5 @@ jobs:
           context: ./tools
           push: true
           platforms: linux/amd64
-          tags: ghcr.io/${{ github.repository_owner }}/cke-tools:${{ steps.extract-tag.outputs.tag }}
+          tags: ghcr.io/${{ github.repository_owner }}/cke-tools:${{ env.tag }}
           labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
