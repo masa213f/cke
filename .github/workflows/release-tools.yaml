@@ -20,7 +20,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          tag: |
+          tags: |
             type=semver,pattern={{version}}
           images: cke-tools
       - name: Log in to ghcr.io
