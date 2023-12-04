@@ -12,7 +12,7 @@ func (i Image) Name() string {
 const (
 	EtcdImage            = Image("ghcr.io/cybozu/etcd:3.5.10.2")
 	KubernetesImage      = Image("ghcr.io/cybozu/kubernetes:1.27.8.2")
-	ToolsImage           = Image("ghcr.io/cybozu/cke-tools:1.27.1")
+	ToolsImage           = Image("ghcr.io/cybozu-go/cke-tools:1.27.1")
 	PauseImage           = Image("ghcr.io/cybozu/pause:3.9.0.3")
 	CoreDNSImage         = Image("ghcr.io/cybozu/coredns:1.11.1.2")
 	UnboundImage         = Image("ghcr.io/cybozu/unbound:1.18.0.2")
