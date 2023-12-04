@@ -1,6 +1,8 @@
 name: release-tools
 on:
   push:
+    branches:
+      - 'main'
     tags:
       - 'tools-*'
 jobs:
@@ -16,14 +18,15 @@ jobs:
         run: |
           cd tools
           make all
-
+      - name: Extract tag
+        id: extract-tag
+        run: echo "tag=${GITHUB_REF#refs/tags/tools-}" >> $GITHUB_OUTPUT
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
-          tag: |
-            type=semver,pattern={{version}}
-          images: ${{ env.REGISTRY }}/cke-tools
+          tag: ${{ steps.extract-tag.outputs.tag }}
+          images: cke-tools
       - name: Log in to ghcr.io
         uses: docker/login-action@v3
         with:
