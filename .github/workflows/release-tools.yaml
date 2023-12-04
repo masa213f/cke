@@ -10,6 +10,8 @@ jobs:
     name: Release CKE tools image
     runs-on: ubuntu-22.04
     steps:
+      - run: echo ${GITHUB_REF}
+      - run: echo ${{ env.tag }}
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v4
         with:
