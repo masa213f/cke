@@ -16,13 +16,9 @@ jobs:
         run: |
           cd tools
           make all
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          tags: |
-            type=semver,pattern={{version}}
-          images: cke-tools
+      - name: Extract tag
+        id: extract-tag
+        run: echo "tag=${GITHUB_REF#refs/tags/tools-}" >> $GITHUB_OUTPUT
       - name: Log in to ghcr.io
         uses: docker/login-action@v3
         with:
@@ -33,7 +29,6 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./tools
-          provenance: false
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ghcr.io/${{ env.GITHUB_REPOSITORY_OWNER }}/cke-tools:${{ steps.extract-tag.outputs.tag }}
+          labels: org.opencontainers.image.source=https://github.com/${{ env.GITHUB_REPOSITORY }}
