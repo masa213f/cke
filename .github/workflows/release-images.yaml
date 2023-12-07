@@ -64,8 +64,6 @@ jobs:
   release-github:
     name: Release on GitHub
     runs-on: ubuntu-22.04
-    container:
-      image: quay.io/cybozu/golang:1.20-jammy
     needs: release-cke-image
     steps:
       - uses: actions/checkout@v4
@@ -82,10 +80,10 @@ jobs:
           sed "s/vX\.Y\.Z/v${{ env.tag }}/" sonobuoy/PRODUCT.yaml > /tmp/upload/PRODUCT.yaml
           GOBIN=/tmp/upload CGO_ENABLED=0 go install -buildvcs=false ./pkg/cke ./pkg/ckecli
       - name: Create release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          OWNER=$(echo ${{ github.repository }} | cut -d '/' -f 1)
-          REPOSITORY=$(echo ${{ github.repository }} | cut -d '/' -f 2)
           if ${{ env.prerelease }}; then
-            PRERELEASE="-prerelease"
+            PRERELEASE="--prerelease"
           fi
-          ghr -t ${{ secrets.GITHUB_TOKEN }} -u ${OWNER} -r ${REPOSITORY} -n v${{ env.tag }} ${PRERELEASE} -b "See [CHANGELOG.md](./CHANGELOG.md) for details." v${{ env.tag }} /tmp/upload/
+          gh release create v${{ env.tag }} ${PRERELEASE} -t v${{ env.tag }}  -n "See [CHANGELOG.md](./CHANGELOG.md) for details." /tmp/upload/
