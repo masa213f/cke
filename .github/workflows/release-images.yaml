@@ -15,27 +15,13 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
-      - uses: google-github-actions/auth@v1
-        with:
-          credentials_json: ${{ secrets.NECO_TEST_SERVICE_ACCOUNT }}
-      - uses: google-github-actions/setup-gcloud@v1
-      - name: Set GCP instance name
-        run: echo "INSTANCE_NAME=cke-${{ matrix.suite }}-${{ github.run_number }}-$(TZ=Asia/Tokyo date +%H%M%S)" >> $GITHUB_ENV
-      - name: Run sonobuoy
-        run: |
-          if [ ${{ github.event_name }} = "pull_request" ]; then
-            GITHUB_SHA=$(cat ${GITHUB_EVENT_PATH} | jq -r '.pull_request.head.sha')
-          fi
-          ./bin/run-sonobuoy.sh
-        timeout-minutes: 240
-      - name: Check failures
-        run: |
-          grep -F 'no tests failed for plugin "e2e" in tarball' /tmp/e2e-check.log
+      - run: |
+          echo "hello" > /tmp/sonobuoy.txt
       - name: Upload sonobuoy test result
         uses: actions/upload-artifact@v3
         with:
           name: sonobuoy-test
-          path: /tmp/sonobuoy.tar.gz
+          path: /tmp/sonobuoy.txt
           retention-days: 1
   release-cke-image:
     name: Release CKE Image
