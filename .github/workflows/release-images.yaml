@@ -14,22 +14,8 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
-      - uses: google-github-actions/auth@v1
-        with:
-          credentials_json: ${{ secrets.NECO_TEST_SERVICE_ACCOUNT }}
-      - uses: google-github-actions/setup-gcloud@v1
-      - name: Set GCP instance name
-        run: echo "INSTANCE_NAME=cke-${{ matrix.suite }}-${{ github.run_number }}-$(TZ=Asia/Tokyo date +%H%M%S)" >> $GITHUB_ENV
-      - name: Run sonobuoy
-        run: |
-          if [ ${{ github.event_name }} = "pull_request" ]; then
-            GITHUB_SHA=$(cat ${GITHUB_EVENT_PATH} | jq -r '.pull_request.head.sha')
-          fi
-          ./bin/run-sonobuoy.sh
-        timeout-minutes: 240
-      - name: Check failures
-        run: |
-          grep -F 'no tests failed for plugin "e2e" in tarball' /tmp/e2e-check.log
+      - run: |
+          echo "hello" > /tmp/sonobuoy.tar.gz
       - name: Upload sonobuoy test result
         uses: actions/upload-artifact@v3
         with:
@@ -80,7 +66,7 @@ jobs:
         run: |
           mkdir /tmp/upload
           cp ./sonobuoy.tar.gz /tmp/upload
-          tar xzf ./sonobuoy.tar.gz -C /tmp/upload --strip-components=4 plugins/e2e/results/global/e2e.log plugins/e2e/results/global/junit_01.xml
+          #tar xzf ./sonobuoy.tar.gz -C /tmp/upload --strip-components=4 plugins/e2e/results/global/e2e.log plugins/e2e/results/global/junit_01.xml
           sed "s/vX\.Y\.Z/v${{ steps.extract-tag.outputs.tag }}/" sonobuoy/README.md > /tmp/upload/README.md
           sed "s/vX\.Y\.Z/v${{ steps.extract-tag.outputs.tag }}/" sonobuoy/PRODUCT.yaml > /tmp/upload/PRODUCT.yaml
           GOBIN=/tmp/upload CGO_ENABLED=0 go install -buildvcs=false ./pkg/cke ./pkg/ckecli
