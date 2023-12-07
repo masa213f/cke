@@ -4,7 +4,6 @@ on:
     tags:
       - 'v*'
 env:
-  tag: ${GITHUB_REF#refs/tags/v}
   prerelease: ${{ contains(github.ref, '-') }}
 jobs:
   sonobuoy:
@@ -29,6 +28,9 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+      - name: Extract tag
+        id: extract-tag
+        run: echo "tag=${GITHUB_REF#refs/tags/tools-}" >> $GITHUB_OUTPUT
       - name: Log in to ghcr.io
         uses: docker/login-action@v3
         with:
@@ -41,7 +43,7 @@ jobs:
           context: ./docker
           push: ${{ !env.prerelease }}
           platforms: linux/amd64
-          tags: ghcr.io/${{ github.repository_owner }}/cke:${{ env.tag }}
+          tags: ghcr.io/${{ github.repository_owner }}/cke:${{ steps.extract-tag.outputs.tag }}
           labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
   release-github:
     name: Release on GitHub
@@ -53,13 +55,16 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: sonobuoy-test
+      - name: Extract tag
+        id: extract-tag
+        run: echo "tag=${GITHUB_REF#refs/tags/tools-}" >> $GITHUB_OUTPUT
       - name: Prepare files
         run: |
           mkdir /tmp/upload
           cp ./sonobuoy.tar.gz /tmp/upload
           tar xzf ./sonobuoy.tar.gz -C /tmp/upload --strip-components=4 plugins/e2e/results/global/e2e.log plugins/e2e/results/global/junit_01.xml
-          sed "s/vX\.Y\.Z/v${{ env.tag }}/" sonobuoy/README.md > /tmp/upload/README.md
-          sed "s/vX\.Y\.Z/v${{ env.tag }}/" sonobuoy/PRODUCT.yaml > /tmp/upload/PRODUCT.yaml
+          sed "s/vX\.Y\.Z/v${{ steps.extract-tag.outputs.tag }}/" sonobuoy/README.md > /tmp/upload/README.md
+          sed "s/vX\.Y\.Z/v${{ steps.extract-tag.outputs.tag }}/" sonobuoy/PRODUCT.yaml > /tmp/upload/PRODUCT.yaml
           GOBIN=/tmp/upload CGO_ENABLED=0 go install -buildvcs=false ./pkg/cke ./pkg/ckecli
       - name: Create release
         env:
@@ -68,4 +73,4 @@ jobs:
           if ${{ env.prerelease }}; then
             PRERELEASE="--prerelease"
           fi
-          gh release create v${{ env.tag }} ${PRERELEASE} -t v${{ env.tag }}  -n "See [CHANGELOG.md](./CHANGELOG.md) for details." /tmp/upload/
+          gh release create v${{ steps.extract-tag.outputs.tag }} ${PRERELEASE} -t v${{ steps.extract-tag.outputs.tag }}  -n "See [CHANGELOG.md](./CHANGELOG.md) for details." /tmp/upload/
