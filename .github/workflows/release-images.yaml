@@ -77,4 +77,4 @@ jobs:
           if ${{ env.prerelease }}; then
             PRERELEASE="--prerelease"
           fi
-          gh release create v${{ steps.extract-tag.outputs.tag }} ${PRERELEASE} -t v${{ steps.extract-tag.outputs.tag }}  -n "See [CHANGELOG.md](./CHANGELOG.md) for details." /tmp/upload/
+          gh release create v${{ steps.extract-tag.outputs.tag }} ${PRERELEASE} -t v${{ steps.extract-tag.outputs.tag }}  -n "See [CHANGELOG.md](./CHANGELOG.md) for details." /tmp/upload/*
