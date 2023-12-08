@@ -32,9 +32,17 @@ jobs:
         with:
           go-version-file: go.mod
       - run: make install GOBIN=$(pwd)/docker
-      - name: Extract tag
-        id: extract-tag
-        run: echo "tag=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository_owner }}/cke
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
       - name: Log in to ghcr.io
         uses: docker/login-action@v3
         with:
@@ -45,9 +53,9 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./docker
-          push: ${{ env.prerelease == 'false' }}
+          push: true
           platforms: linux/amd64
-          tags: ghcr.io/${{ github.repository_owner }}/cke:${{ steps.extract-tag.outputs.tag }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
   release-github:
     name: Release on GitHub
